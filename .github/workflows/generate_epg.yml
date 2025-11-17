@@ -12,10 +12,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set executable permission for script
-        run: chmod +x generate_epg.sh
+        run: chmod +x epg_generator.sh
 
       - name: Run EPG generator
-        run: ./generate_epg.sh
+        run: ./epg_generator.sh
 
       - name: Upload NBC News EPG
         uses: actions/upload-artifact@v4
