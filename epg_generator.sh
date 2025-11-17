@@ -4,58 +4,47 @@
 
 ## VARIABLES
 
-CHANNEL_ID="NBCNews"
+# Output file path (first argument)
+OUTPUT_FILE=${1:-"./NBC_News.xml"}
+
+CHANNEL_ID="NBC_News"
 CHANNEL_NAME="NBC News"
 DESCRIPTION="This is a standard TV programme for your YouTube Live feed."
-BASEPATH="/home/ubuntu/EPG"
-DUMMYFILENAME="epg_nbc_news.xml"
-NDAYS=3  # Number of days to generate the EPG (adjust as needed)
+NDAYS=7  # Default: generate 7 days of EPG
 
 # Create XML header
-
-mkdir -p "$BASEPATH"
-echo '<?xml version="1.0" encoding="UTF-8"?>' > "$BASEPATH/$DUMMYFILENAME"
-echo '<tv generator-info-name="dummyepg" generator-info-url="https://github.com/yurividal/dummyepgxml/">' >> "$BASEPATH/$DUMMYFILENAME"
+echo '<?xml version="1.0" encoding="UTF-8"?>' > "$OUTPUT_FILE"
+echo '<tv generator-info-name="dummyepg" generator-info-url="https://null.null/">' >> "$OUTPUT_FILE"
 
 # Channel definition
-
-cat >> "$BASEPATH/$DUMMYFILENAME" <<EOL
-<channel id="$CHANNEL_ID">
-    <display-name lang="en">$CHANNEL_NAME</display-name>
-</channel>
+cat >> "$OUTPUT_FILE" <<EOL
+    <channel id="$CHANNEL_ID">
+        <display-name lang="en">$CHANNEL_NAME</display-name>
+    </channel>
 EOL
 
-# Function to generate programmes
-
 generate_programmes() {
-    local day=$1
-    local next_day=$(date -d "$day +1 day" +%Y%m%d)
+    local dia=$1
+    local dia_amanha=$(date -d "$dia +1 day" +%Y%m%d)
+    local offset=$(date -d "$dia" +%z)
+    local offset_next=$(date -d "$dia_amanha" +%z)
 
-    # Local timezone offset
-    local offset=$(date -d "$day" +%z)
-    local offset_next=$(date -d "$next_day" +%z)
+    echo "    <programme start=\"${dia}000000 $offset\" stop=\"${dia}235900 $offset\" channel=\"$CHANNEL_ID\">" >> "$OUTPUT_FILE"
+    echo "        <title lang=\"en\">Test Programme</title>" >> "$OUTPUT_FILE"
+    echo "        <desc lang=\"en\">$DESCRIPTION</desc>" >> "$OUTPUT_FILE"
+    echo "    </programme>" >> "$OUTPUT_FILE"
 
-    # Full-day program: 00:00 → 23:59
-    echo "    <programme start=\"${day}000000 $offset\" stop=\"${day}235900 $offset\" channel=\"$CHANNEL_ID\">" >> "$BASEPATH/$DUMMYFILENAME"
-    echo "        <title lang=\"en\">Test Programme</title>" >> "$BASEPATH/$DUMMYFILENAME"
-    echo "        <desc lang=\"en\">$DESCRIPTION</desc>" >> "$BASEPATH/$DUMMYFILENAME"
-    echo "    </programme>" >> "$BASEPATH/$DUMMYFILENAME"
-
-    # Last-minute program: 23:59 → 00:00 next day
-    echo "    <programme start=\"${day}235900 $offset\" stop=\"${next_day}000000 $offset_next\" channel=\"$CHANNEL_ID\">" >> "$BASEPATH/$DUMMYFILENAME"
-    echo "        <title lang=\"en\">Test Programme</title>" >> "$BASEPATH/$DUMMYFILENAME"
-    echo "        <desc lang=\"en\">$DESCRIPTION</desc>" >> "$BASEPATH/$DUMMYFILENAME"
-    echo "    </programme>" >> "$BASEPATH/$DUMMYFILENAME"
+    echo "    <programme start=\"${dia}235900 $offset\" stop=\"${dia_amanha}000000 $offset_next\" channel=\"$CHANNEL_ID\">" >> "$OUTPUT_FILE"
+    echo "        <title lang=\"en\">Test Programme</title>" >> "$OUTPUT_FILE"
+    echo "        <desc lang=\"en\">$DESCRIPTION</desc>" >> "$OUTPUT_FILE"
+    echo "    </programme>" >> "$OUTPUT_FILE"
 }
 
-# Generate EPG for the number of days specified
-
 for i in $(seq 0 $((NDAYS-1))); do
-    day=$(date -d "+$i day" +%Y%m%d)
-    generate_programmes $day
+    dia=$(date -d "+$i day" +%Y%m%d)
+    generate_programmes $dia
 done
 
-# Close XML
-echo '</tv>' >> "$BASEPATH/$DUMMYFILENAME"
+echo '</tv>' >> "$OUTPUT_FILE"
 
-echo "EPG file generated at $BASEPATH/$DUMMYFILENAME"
+echo "EPG file generated at $OUTPUT_FILE"
