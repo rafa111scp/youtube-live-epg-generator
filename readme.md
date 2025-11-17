@@ -1,6 +1,6 @@
-# YouTube Live EPG Generator - NBC News
+# YouTube Live EPG Generator
 
-This repository generates a demo XMLTV EPG for NBC News YouTube Live.
+This repository generates a demo XMLTV EPG for a YouTube Live feed.
 
 ## Usage
 
