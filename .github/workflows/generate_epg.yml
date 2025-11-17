@@ -1,29 +1,24 @@
 name: Generate NBC News EPG
 
 on:
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch:  # allows manual trigger
 
 jobs:
-  generate:
+  generate-epg:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Make script executable
-        run: chmod +x epg_generator.sh
+      - name: Set executable permission for script
+        run: chmod +x generate_epg.sh
 
-      - name: Generate EPG XML
-        run: |
-          ./epg_generator.sh ./NBC_News.xml
+      - name: Run EPG generator
+        run: ./generate_epg.sh
 
-      - name: Commit and push EPG
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add NBC_News.xml
-          git commit -m "Update NBC News EPG [skip ci]" || echo "No changes to commit"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload NBC News EPG
+        uses: actions/upload-artifact@v4
+        with:
+          name: nbc-news-epg
+          path: NBC_News.xml
